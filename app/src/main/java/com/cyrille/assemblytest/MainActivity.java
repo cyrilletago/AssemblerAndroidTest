@@ -7,6 +7,10 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
+    static {
+        System.loadLibrary("main");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -16,8 +20,7 @@ public class MainActivity extends AppCompatActivity {
         // setContentView(R.layout.activity_main);
     }
     public native String jniMethod();
-    static {
-        System.loadLibrary("main");
-    }
+
+
 }
 
