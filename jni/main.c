@@ -2,9 +2,9 @@
 
 #include <jni.h>
 /* This stub calls the function. */
-#ifdef __arm__
+// #ifdef __arm__
 int asm_main(void);
-#endif
+// #endif
 
 jstring Java_com_cyrille_assemblytest_MainActivity_jniMethod(
         JNIEnv* env, jobject thiz) {
@@ -12,26 +12,26 @@ jstring Java_com_cyrille_assemblytest_MainActivity_jniMethod(
     char s[N];
     size_t cur = 0;
 
-    int x = 1;
+    int x = 0;
 
-#ifdef __arm__
+//#ifdef __arm__
     /* This part of the code seems not to be executed as the value of x in the if loop
          * remains 0 even after the redefinition below.*/
 
-    cur += snprintf(s + cur, N - cur, "arm ");
+    // cur += snprintf(s + cur, N - cur, "arm ");
 
     x = 1;
 
     x += asm_main();
-#endif
+// #endif
 
-    if (x == 1)
-        cur += snprintf(s + cur, N - cur, " Hello: x is %s", "1");
-    else
-        cur += snprintf(s + cur, N - cur, " Hello: x is %s", "-");
+//    if (x == 1)
+//        cur += snprintf(s + cur, N - cur, " Hello: x is %s", "1");
+//    else
+//        cur += snprintf(s + cur, N - cur, " Hello: x is %s", "-");
 
     cur += snprintf(s + cur, N - cur, " Hello %d", x);
-    /*cur += snprintf(s + cur, N - cur, "Hello %d", asm_main());*/
+    /*cur +=a snprintf(s + cur, N - cur, "Hello %d", asm_main());*/
 
     return (*env)->NewStringUTF(env, s);
 }
