@@ -1,9 +1,13 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
+#include <jni.h>
+
+#ifdef __ARM__
 
 int int_add_128(uint32_t *r, const uint32_t *a, const uint32_t *b);
 
+#endif
 void int_print(const char *c, uint32_t *a, int len)
 {
   int i;
@@ -13,20 +17,33 @@ void int_print(const char *c, uint32_t *a, int len)
   printf("\n");
 }
 
-int main(void)
-{
+jstring Java_com_cyrille_assemblytest_MainActivity_jniMethod(
+        JNIEnv* env, jobject thiz) {
+
+  enum Constexpr { N = 256 };
+      char s[N];
+      size_t cur = 0;
+
+      int x = 0;
+
   int c = 5;
   unsigned int a[4] = { 10, 20, 30, 40 };
   unsigned int b[4] = { 11, 22, 33, 44 };
   unsigned int r[4];
-  
-  c = int_add_128(r, a, b);
-  
-  int_print("a = 0x", a, 4);
-  int_print("a = 0x", b, 4);
-  int_print("a = 0x", r, 4);
-  printf("c = %i\n", c);
-  
-  return 0;
+
+  #ifdef __ARM__
+
+    c = int_add_128(r, a, b);
+
+      // int_print("a = 0x", a, 4);
+      // int_print("a = 0x", b, 4);
+      // int_print("a = 0x", r, 4);
+      // printf("c = %i\n", c);
+  #endif
+   cur += snprintf(s + cur, N - cur, "carry: %d, result: %08x%08x%08x%08x", c, r[3], r[2], r[1], r[0]);
+   /*cur +=a snprintf(s + cur, N - cur, "Hello %d", asm_main());*/
+
+   return (*env)->NewStringUTF(env, s);
+
 }
 
