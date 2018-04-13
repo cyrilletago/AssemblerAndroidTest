@@ -40,6 +40,8 @@ jstring Java_com_cyrille_assemblytest_MainActivity_jniMethod(
       // int_print("a = 0x", r, 4);
       // printf("c = %i\n", c);
   #endif
+   cur += snprintf(s + cur, N - cur, "operand a: %08x%08x%08x%08x\n", a[3], a[2], a[1], a[0]);
+   cur += snprintf(s + cur, N - cur, "operand b: %08x%08x%08x%08x\n", b[3], b[2], b[1], b[0]);
    cur += snprintf(s + cur, N - cur, "carry: %d, result: %08x%08x%08x%08x", c, r[3], r[2], r[1], r[0]);
    /*cur +=a snprintf(s + cur, N - cur, "Hello %d", asm_main());*/
 
