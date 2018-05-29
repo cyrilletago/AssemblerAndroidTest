@@ -35,113 +35,118 @@
     
 // // register rStart holds the start address of array <r>
 #define rStart r0 // rStart RN r0
+
 // // register aStart holds the start address of array <a>
-aStart RN r1
+#define aStart r1 // aStart RN r1
+
 // // register bStart holds the start address of array <b>
-bStart RN r2
+#define bStart r2 // bStart RN r2
+
 // // register tStart holds the start address of a temporary array for the product
-tStart RN sp
+#define tStart sp // tStart RN sp
+
 // // register cParam holds the parameter <c> that defines the prime
-cParam RN r3
+#define cParam r3 // cParam RN r3
+
 // // register mulOp1 holds the first operand of a multiplication
-mulOp1 RN r4
+#define mulOp1 r4 // mulOp1 RN r4
+
 // // register mulOp2 holds the second operand of a multiplication
-mulOp2 RN r5
+#define mulOp2 r5 // mulOp2 RN r5
+
 // // register prodLo holds the lower part of a 64-bit product
-prodLo RN r4
+#define prodLo r4 // prodLo RN r4
+
 // // register prodHi holds the higher part of a 64-bit product
-prodHi RN r5
+#define prodHi r5 // prodHi RN r5
+
 // // register accuLo holds the lower part of a 96-bit accumulator
-accuLo RN r6
+#define accuLo r6 // accuLo RN r6
+
 // // register accuHi holds the higher part of a 96-bit accumulator
-accuHi RN r7
+#define accuHi r7 // accuHi RN r7
+
 // // register accuEx holds the extension part of a 96-bit accumulator
-accuEx RN r8
+#define accuEx r8 // accuEx RN r8
+
 // // register loWord holds the lower part of a 64-bit quantity (used in red.)
-loWord RN r6
+#define loWord r6 // loWord RN r6
+
 // // register hiWord holds the higher part of a 64-bit quantity (used in red.)
-hiWord RN r7
-    
-    
+#define hiWord r7 // hiWord RN r7
+
+
 // ////////////
 // // Macros //
 // ////////////
     
-    MACRO
-    gfpmul_prologue $tmpSpace
-    push  {r4, r8}
-    sub   sp, sp, #$tmpSpace
-    MEND
+
+    .macro gfpmul_prologue tmpSpace:req
+    push  {r4-r8}
+    sub   sp, sp, #\tmpSpace
+    .endm
     
-    MACRO
-    gfpmul_epilogue $tmpSpace
-    add   sp, sp, #$tmpSpace
-    pop   {r4, r8}
+    .macro gfpmul_epilogue tmpSpace:req
+    add   sp, sp, #\tmpSpace
+    pop   {r4-r8}
     bx    lr
-    MEND
+    .endm
     
-    MACRO
-    mul_and_acc_1st $aOffset, $bOffset
-    ldr   mulOp1, [aStart, #$aOffset]
-    ldr   mulOp2, [bStart, #$bOffset]
+    .macro mul_and_acc_1st aOffset:req, bOffset:req
+    ldr   mulOp1, [aStart, #\aOffset]
+    ldr   mulOp2, [bStart, #\bOffset]
     umull accuLo, accuHi, mulOp1, mulOp2
     mov   accuEx, #0
-    MEND
+    .endm
     
-    MACRO
-    mul_and_acc_mid $aOffset, $bOffset
-    ldr   mulOp1, [aStart, #$aOffset]
-    ldr   mulOp2, [bStart, #$bOffset]
+    .macro mul_and_acc_mid aOffset:req, bOffset:req
+    ldr   mulOp1, [aStart, #\aOffset]
+    ldr   mulOp2, [bStart, #\bOffset]
     umull prodLo, prodHi, mulOp1, mulOp2
     adds  accuLo, accuLo, prodLo
     adcs  accuHi, accuHi, prodHi
     adc   accuEx, accuEx, #0
-    MEND
+    .endm
     
-    MACRO
-    store_and_shift $tOffset
-    str   accuLo, [tStart, #$tOffset]
+    .macro store_and_shift tOffset:req
+    str   accuLo, [tStart, #\tOffset]
     mov   accuLo, accuHi
     mov   accuHi, accuEx
     mov   accuEx, #0
-    MEND
+    .endm
     
-    MACRO
-    store_last_prod $tOffset
-    str   accuLo, [tStart, #$tOffset]
-    str   accuHi, [tStart, #(4+$tOffset)]
-    MEND
+    .macro store_last_prod tOffset:req
+    str   accuLo, [tStart, #\tOffset]
+    str   accuHi, [tStart, #(4+\tOffset)]
+    .endm
     
-    MACRO
-    red_mul_add_1st $lOffset, $hOffset
+    .macro red_mul_add_1st lOffset:req, hOffset:req
     lsl   cParam, cParam, #1
-    ldr   mulOp1, [tStart, #$hOffset]
+    ldr   mulOp1, [tStart, #\hOffset]
     umull prodLo, prodHi, mulOp1, cParam
-    ldr   loWord, [tStart, #$lOffset]
+    ldr   loWord, [tStart, #\lOffset]
     adds  prodLo, prodLo, loWord
     adc   prodHi, prodHi, #0
-    str   prodLo, [rStart, #$lOffset]
+    str   prodLo, [rStart, #\lOffset]
     mov   hiWord, prodHi
-    MEND
+    .endm
     
-    MACRO
-    red_mul_add_mid $lOffset, $hOffset
-    ldr   mulOp1, [tStart, #$hOffset]
+    .macro red_mul_add_mid lOffset:req, hOffset:req
+    ldr   mulOp1, [tStart, #\hOffset]
     umull prodLo, prodHi, mulOp1, cParam
-    ldr   loWord, [tStart, #$lOffset]
+    ldr   loWord, [tStart, #\lOffset]
     adds  prodLo, prodLo, loWord
     adc   prodHi, prodHi, #0
     adds  prodLo, prodLo, hiWord
     adc   prodHi, prodHi, #0
-    str   prodLo, [rStart, #$lOffset]
+    str   prodLo, [rStart, #\lOffset]
     mov   hiWord, prodHi
-    MEND
+    .endm
     
-    MACRO
-    red_mul_add_fin $lOffset, $hOffset
-    ldr   mulOp1, [tStart, #$hOffset]
+    .macro red_mul_add_fin lOffset:req, hOffset:req
+    ldr   mulOp1, [tStart, #\hOffset]
     umull prodLo, prodHi, mulOp1, cParam
-    ldr   loWord, [tStart, #$lOffset]
+    ldr   loWord, [tStart, #\lOffset]
     adds  prodLo, prodLo, loWord
     adc   prodHi, prodHi, #0
     adds  prodLo, prodLo, hiWord
@@ -149,27 +154,25 @@ hiWord RN r7
     lsls  prodLo, prodLo, #1
     adc   prodHi, prodHi, prodHi
     lsr   prodLo, prodLo, #1
-    str   prodLo, [rStart, #$lOffset]
-    MEND
+    str   prodLo, [rStart, #\lOffset]
+    .endm
     
-    MACRO
-    red_st2_mul_add $lOffset, $hOffset
+    .macro red_st2_mul_add lOffset:req, hOffset:req
     lsr   cParam, cParam, #1
     umull prodLo, prodHi, prodHi, cParam
-    ldr   loWord, [rStart, #$lOffset]
-    ldr   hiWord, [rStart, #$hOffset]
+    ldr   loWord, [rStart, #\lOffset]
+    ldr   hiWord, [rStart, #\hOffset]
     adds  prodLo, prodLo, loWord
     adcs  prodHi, prodHi, hiWord
-    str   prodLo, [rStart, #$lOffset]
-    str   prodHi, [rStart, #$hOffset]
-    MEND
+    str   prodLo, [rStart, #\lOffset]
+    str   prodHi, [rStart, #\hOffset]
+    .endm
     
-    MACRO
-    propagate_carry $rOffset
-    ldr   loWord, [rStart, #$rOffset]
+    .macro propagate_carry rOffset:req
+    ldr   loWord, [rStart, #\rOffset]
     adcs  loWord, loWord, #0
-    str   loWord, [rStart, #$rOffset]
-    MEND
+    str   loWord, [rStart, #\rOffset]
+    .endm
     
     
 ////////////////////////////////////
